@@ -1,18 +1,26 @@
 # Write your code here :-)
-import busio
+
 import time
 import board
-import digitalio
+import neopixel
+import supervisor
+import sys
 
-led = digitalio.DigitalInOut(board.D13)
-led.direction = digitalio.Direction.OUTPUT
-
-uart = busio.UART(board.TX, board.RX, baudrate=9600)
+pixel_pin = board.D0
+num_pixels = 12
+pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.3, auto_write=False)
 
 while True:
-    data = uart.read()
-
-    if data is not None:
-        led.value = True
+    if supervisor.runtime.serial_bytes_available:
+        incomingByte = sys.stdin.readline().rstrip()
+        print("incomingByte: " + str(incomingByte))
+        if incomingByte is not None:
+            alpha = float(int(incomingByte) / 100)
+            for i in range(num_pixels):
+                pixels[i] = (int(255 * alpha), int(0 * alpha), int(255 * alpha))
+                pixels.show()
     else:
-        led.value = False
+        for i in range(num_pixels):
+            pixels[i] = (0, 0, 0)
+            pixels.show()
+        print("hit else")
